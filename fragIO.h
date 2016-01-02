@@ -266,7 +266,81 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
     }
   }
   fclose(fp);
+}
 
+// Load keypoints, apply transform, and save to point cloud
+void keypoints2ply(std::vector<std::vector<float>> &keypoints, const std::string &filename, float* transform, std::vector<float> &color) {
+
+  // Count total number of points in point cloud
+  int num_points = keypoints.size()*20;
+
+  // Create header for ply file
+  FILE *fp = fopen(filename.c_str(), "w");
+  fprintf(fp, "ply\n");
+  fprintf(fp, "format binary_little_endian 1.0\n");
+  fprintf(fp, "element vertex %d\n", num_points);
+  fprintf(fp, "property float x\n");
+  fprintf(fp, "property float y\n");
+  fprintf(fp, "property float z\n");
+  fprintf(fp, "property uchar red\n");
+  fprintf(fp, "property uchar green\n");
+  fprintf(fp, "property uchar blue\n");
+  fprintf(fp, "end_header\n");
+
+  for (int i = 0; i < keypoints.size(); i++) {
+
+    float sx = (float)keypoints[i][0];
+    float sy = (float)keypoints[i][1];
+    float sz = (float)keypoints[i][2];
+
+    // Apply Rt transform to points
+    float fx = transform[0] * sx + transform[1] * sy + transform[2] * sz + transform[3];
+    float fy = transform[4] * sx + transform[5] * sy + transform[6] * sz + transform[7];
+    float fz = transform[8] * sx + transform[9] * sy + transform[10] * sz + transform[11];
+    fwrite(&fx, sizeof(float), 1, fp);
+    fwrite(&fy, sizeof(float), 1, fp);
+    fwrite(&fz, sizeof(float), 1, fp);
+
+    // Give the points color
+    unsigned char r = (unsigned char) (color[0]*255.0f);
+    unsigned char g = (unsigned char) (color[1]*255.0f);
+    unsigned char b = (unsigned char) (color[2]*255.0f);
+    fwrite(&r, sizeof(unsigned char), 1, fp);
+    fwrite(&g, sizeof(unsigned char), 1, fp);
+    fwrite(&b, sizeof(unsigned char), 1, fp);
+
+    // Draw 3x3 box around keypoint
+    for (int kk = -1; kk <= 1; kk++) {
+      for (int jj = -1; jj <= 1; jj++) {
+        for (int ii = -1; ii <= 1; ii++) {
+          int num_edges = 0;
+          if (kk == -1 || kk == 1)
+            num_edges++;
+          if (jj == -1 || jj == 1)
+            num_edges++;
+          if (ii == -1 || ii == 1)
+            num_edges++;
+          if (num_edges >= 2) {
+            float float_x = (float) (sx + (float)ii*0.01f);
+            float float_y = (float) (sy + (float)jj*0.01f);
+            float float_z = (float) (sz + (float)kk*0.01f);
+
+            fx = transform[0] * float_x + transform[1] * float_y + transform[2] * float_z + transform[3];
+            fy = transform[4] * float_x + transform[5] * float_y + transform[6] * float_z + transform[7];
+            fz = transform[8] * float_x + transform[9] * float_y + transform[10] * float_z + transform[11];
+
+            fwrite(&fx, sizeof(float), 1, fp);
+            fwrite(&fy, sizeof(float), 1, fp);
+            fwrite(&fz, sizeof(float), 1, fp);
+            fwrite(&r, sizeof(unsigned char), 1, fp);
+            fwrite(&g, sizeof(unsigned char), 1, fp);
+            fwrite(&b, sizeof(unsigned char), 1, fp);
+          }
+        }
+      }
+    }
+  }
+  fclose(fp);
 }
 
 void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int>> &grid_keypoints,   std::vector<std::vector<float>> &world_keypoints) {
@@ -319,7 +393,7 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
 
     // Detect keypoints in TSDF volume
     float surface_tsdf_threshold = 0.2;
-    std::vector<std::vector<int>> detected_keypoints =  detect_keypoints(tsdf, tsdf_dim[0], tsdf_dim[1], tsdf_dim[2], surface_tsdf_threshold, 1.0f, 5, 100.0f);
+    std::vector<std::vector<int>> detected_keypoints =  detect_keypoints(tsdf, tsdf_dim[0], tsdf_dim[1], tsdf_dim[2], surface_tsdf_threshold, 1.0f, 5, 255.0f);
     grid_keypoints = prune_keypoints(detected_keypoints, 15, tsdf_dim[0], tsdf_dim[1], tsdf_dim[2]);
 
     // Save keypoints in grid coordinates
