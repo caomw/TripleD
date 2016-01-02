@@ -332,8 +332,8 @@ void ddd_compare_feature_cloud(std::vector<std::vector<float>> &feat1, std::vect
 }
 
 ///////////////////////////////////////////////////////////////////////
-void ddd_align_feature_cloud(const std::vector<std::vector<float>> &world_keypoints1, std::vector<std::vector<float>> &feat1, const std::vector<std::vector<float>> &score_matrix1,
-                             const std::vector<std::vector<float>> &world_keypoints2, std::vector<std::vector<float>> &feat2, const std::vector<std::vector<float>> &score_matrix2,
+void ddd_align_feature_cloud(std::vector<std::vector<float>> &world_keypoints1, std::vector<std::vector<float>> &feat1, std::vector<std::vector<float>> &score_matrix1,
+                             std::vector<std::vector<float>> &world_keypoints2, std::vector<std::vector<float>> &feat2, std::vector<std::vector<float>> &score_matrix2,
                              float k_match_score_thresh, float ransac_k, float max_ransac_iter, float ransac_thresh, float* Rt, std::vector<std::vector<float>> &inlier_pairs) {
 
     // For each keypoint from first set, find indices of all keypoints
