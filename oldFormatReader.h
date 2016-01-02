@@ -196,11 +196,14 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   tsdf2ply(dst + "/pointcloud.ply", new_tsdf, 0.2, x_dim, y_dim, z_dim, grid2world);
 
 
-  // std::vector<std::vector<float>> keypoints;
-  // checkout_keypts(src, keypoints);
-  // for (int i = 0; i < keypoints.size(); i++) {
-  //   std::cout << keypoints[i][0] << " " << keypoints[i][1] << " " << keypoints[i][2] << std::endl;
-
+  std::vector<std::vector<float>> grid_keypoints;
+  checkout_keypts(src, grid_keypoints);
+  for (int i = 0; i < grid_keypoints.size(); i++) {
+    grid_keypoints[i][0]  = grid_keypoints[i][0] - x_min;
+    grid_keypoints[i][1]  = grid_keypoints[i][1] - y_min;
+    grid_keypoints[i][2]  = grid_keypoints[i][2] - z_min;
+    std::cout << grid_keypoints[i][0] << " " << grid_keypoints[i][1] << " " << grid_keypoints[i][2] << std::endl;
+  }
   //   int kx = (int) keypoints[i][0];
   //   int ky = (int) keypoints[i][1]; 
   //   int kz = (int) keypoints[i][2]; 
@@ -208,6 +211,44 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   //   float *tmp_volume = new float[31*31*31];
 
 
+  std::vector<std::vector<float>> world_keypoints;
+
+
+  if (!file_exists(dst + "/keypoints"))
+      sys_command("mkdir " + dst + "/keypoints");
+
+  std::string grid_keypoints_filename = dst + "/keypoints/grid_keypoints.txt";
+  std::string world_keypoints_filename = dst + "/keypoints/world_keypoints.txt";
+
+  // Save keypoints in grid coordinates
+  fp = fopen(grid_keypoints_filename.c_str(), "w");
+  fprintf(fp, "# number of keypoints: %d\n", (int) grid_keypoints.size());
+  for (int i = 0; i < grid_keypoints.size(); i++)
+    fprintf(fp, "%d %d %d\n", (int)grid_keypoints[i][0], (int)grid_keypoints[i][1], (int)grid_keypoints[i][2]);
+  fclose(fp);
+
+  // Convert keypoints to world coordinates
+  for (int i = 0; i < grid_keypoints.size(); i++) {
+    std::vector<float> tmp_world_keypoint;
+    float sx = (float) grid_keypoints[i][0];
+    float sy = (float) grid_keypoints[i][1];
+    float sz = (float) grid_keypoints[i][2];
+    float fx = grid2world[0] * sx + grid2world[1] * sy + grid2world[2] * sz + grid2world[3];
+    float fy = grid2world[4] * sx + grid2world[5] * sy + grid2world[6] * sz + grid2world[7];
+    float fz = grid2world[8] * sx + grid2world[9] * sy + grid2world[10] * sz + grid2world[11];
+    tmp_world_keypoint.push_back(fx);
+    tmp_world_keypoint.push_back(fy);
+    tmp_world_keypoint.push_back(fz);
+    world_keypoints.push_back(tmp_world_keypoint);
+  }
+
+  // Save keypoints in world coordinates
+  fp = fopen(world_keypoints_filename.c_str(), "w");
+  fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints.size());
+  for (int i = 0; i < world_keypoints.size(); i++) {
+    fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints[i][0], world_keypoints[i][1], world_keypoints[i][2]);
+  }
+  fclose(fp);
 
 
 
