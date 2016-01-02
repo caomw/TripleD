@@ -196,7 +196,6 @@ void tsdf2ply(const std::string &filename, float* tsdf, float threshold, int x_d
 
 }
 
-
 void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int>> &grid_keypoints,   std::vector<std::vector<float>> &world_keypoints) {
 
   // If has keypoint file, load it. If not, detect keypoints.
@@ -352,8 +351,8 @@ void compare_frag_features(std::vector<std::vector<float>> &keypoint_features1, 
   if (!file_exists(frag_cache_dir))
     sys_command("mkdir " + frag_cache_dir);
 
-  std::string score_matrix1_filename = frag_cache_dir + "/" + frag_pair_name + "_1.txt";
-  std::string score_matrix2_filename = frag_cache_dir + "/" + frag_pair_name + "_2.txt";
+  std::string score_matrix1_filename = frag_cache_dir + "/" + frag_pair_name + "_scores1.txt";
+  std::string score_matrix2_filename = frag_cache_dir + "/" + frag_pair_name + "_scores2.txt";
   // Check to see if cache contains score matrices for the comparison
   if (file_exists(score_matrix1_filename) && file_exists(score_matrix2_filename)) {
 
@@ -411,6 +410,32 @@ void compare_frag_features(std::vector<std::vector<float>> &keypoint_features1, 
       for (int j = 0; j < score_matrix2[i].size(); j++)
         fprintf(fp, "%.17g ", score_matrix2[i][j]);
       fprintf(fp, "\n");
+    }
+    fclose(fp);
+
+  }
+}
+
+void save_frag_world_keypoints_cache(std::vector<std::vector<float>> &world_keypoints1, std::vector<std::vector<float>> &world_keypoints2, const std::string &frag_cache_dir, const std::string &frag_pair_name) {
+
+  std::string cache_world_keypoints_filename_1 = frag_cache_dir + "/" + frag_pair_name + "_keypoints1.txt";
+  std::string cache_world_keypoints_filename_2 = frag_cache_dir + "/" + frag_pair_name + "_keypoints2.txt";
+
+  if (!file_exists(cache_world_keypoints_filename_1) || !file_exists(cache_world_keypoints_filename_2)) {
+
+    // Save keypoints from first fragment to cache
+    FILE *fp = fopen(cache_world_keypoints_filename_1.c_str(), "w");
+    fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints1.size());
+    for (int i = 0; i < world_keypoints1.size(); i++) {
+      fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints1[i][0], world_keypoints1[i][1], world_keypoints1[i][2]);
+    }
+    fclose(fp);
+
+    // Save keypoints from second fragment to cache
+    fp = fopen(cache_world_keypoints_filename_2.c_str(), "w");
+    fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints2.size());
+    for (int i = 0; i < world_keypoints2.size(); i++) {
+      fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints2[i][0], world_keypoints2[i][1], world_keypoints2[i][2]);
     }
     fclose(fp);
 

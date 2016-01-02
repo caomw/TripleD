@@ -6,6 +6,11 @@
 
 int main(int argc, char **argv) {
 
+
+
+
+
+
   //------------------ Demo for loading old formatted TSDFs ------------------//
 
   // // Convert TSDF from old format to new format
@@ -23,6 +28,12 @@ int main(int argc, char **argv) {
   // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
 
   // Convert point cloud to fragment file (ignore for now)
+
+
+
+
+
+
 
   //------------------ Demo for aligning 2 fragments ------------------//
 
@@ -53,27 +64,28 @@ int main(int argc, char **argv) {
   std::string frag_pair_name = "fire_seq01_0_30_780_810";
   std::vector<std::vector<float>> score_matrix1, score_matrix2;
   compare_frag_features(keypoint_features1, keypoint_features2, frag_cache_dir, frag_pair_name, score_matrix1, score_matrix2);
+  save_frag_world_keypoints_cache(world_keypoints1, world_keypoints2, frag_cache_dir, frag_pair_name);
 
-  // RANSAC parameters
-  float k_match_score_thresh = 0.1f;
-  float ransac_k = 10;
-  float max_ransac_iter = 1000000;
-  float ransac_thresh = 0.04f;
+  // // RANSAC parameters
+  // float k_match_score_thresh = 0.1f;
+  // float ransac_k = 10;
+  // float max_ransac_iter = 1000000;
+  // float ransac_thresh = 0.04f;
 
-  // Use RANSAC to compute rigid transform
-  float* Rt = new float[16]; 
-  Rt[12] = 0; Rt[13] = 0; Rt[14] = 0; Rt[15] = 1;
-  std::vector<std::vector<float>> inlier_pairs;
-  ddd_align_feature_cloud(world_keypoints1, keypoint_features1, score_matrix1,
-                          world_keypoints2, keypoint_features2, score_matrix2,
-                          k_match_score_thresh, ransac_k, max_ransac_iter, ransac_thresh, Rt, inlier_pairs);
+  // // Use RANSAC to compute rigid transform
+  // float* Rt = new float[16]; 
+  // Rt[12] = 0; Rt[13] = 0; Rt[14] = 0; Rt[15] = 1;
+  // std::vector<std::vector<float>> inlier_pairs;
+  // ddd_align_feature_cloud(world_keypoints1, keypoint_features1, score_matrix1,
+  //                         world_keypoints2, keypoint_features2, score_matrix2,
+  //                         k_match_score_thresh, ransac_k, max_ransac_iter, ransac_thresh, Rt, inlier_pairs);
 
-  // Show computed Rt
-  for (int i = 0; i < 16; i++)
-    std::cout << Rt[i] << std::endl;
-  for (int i = 0; i < inlier_pairs.size(); i++) {
-    std::cout << inlier_pairs[i][0] << " " << inlier_pairs[i][1] << " " << inlier_pairs[i][2] << " " << inlier_pairs[i][3] << " " << inlier_pairs[i][4] << " " << inlier_pairs[i][5] << std::endl;
-  }
+  // // Show computed Rt
+  // for (int i = 0; i < 16; i++)
+  //   std::cout << Rt[i] << std::endl;
+  // for (int i = 0; i < inlier_pairs.size(); i++) {
+  //   std::cout << inlier_pairs[i][0] << " " << inlier_pairs[i][1] << " " << inlier_pairs[i][2] << " " << inlier_pairs[i][3] << " " << inlier_pairs[i][4] << " " << inlier_pairs[i][5] << std::endl;
+  // }
 
   return 0;
 }
