@@ -20,12 +20,12 @@ int main(int argc, char **argv) {
   // old_fragment_name = "/data/andyz/kinfu/sun3d/mit_76_studyroom/76-1studyroom2/scene100_149";
   // new_fragment_name = "/data/andyz/fragments/sun3d/mit_176_studyroom2_100_149";
   // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
-  // old_fragment_name = "/data/andyz/kinfu/train/fire_seq01/scene0_30";
-  // new_fragment_name = "/data/andyz/fragments/7scenes/fire_seq01_0_30";
-  // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
-  // old_fragment_name = "/data/andyz/kinfu/train/fire_seq01/scene780_810";
-  // new_fragment_name = "/data/andyz/fragments/7scenes/fire_seq01_780_810";
-  // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
+  std::string old_fragment_name = "/data/andyz/kinfu/train/fire_seq01/scene0_30";
+  std::string new_fragment_name = "/data/andyz/fragments/7scenes/fire_seq01_0_30";
+  convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
+  old_fragment_name = "/data/andyz/kinfu/train/fire_seq01/scene780_810";
+  new_fragment_name = "/data/andyz/fragments/7scenes/fire_seq01_780_810";
+  convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
 
   // Convert point cloud to fragment file (ignore for now)
 
@@ -89,16 +89,16 @@ int main(int argc, char **argv) {
 
   float* transform = new float[16];
   load_identity_matrix(transform);
-  std::vector<float> color_serenity;
-  color_serenity.push_back(145.0f / 255.0f);
-  color_serenity.push_back(168.0f / 255.0f);
-  color_serenity.push_back(209.0f / 255.0f);
-  std::vector<float> color_rosequartz;
-  color_rosequartz.push_back(247.0f / 255.0f);
-  color_rosequartz.push_back(202.0f / 255.0f);
-  color_rosequartz.push_back(201.0f / 255.0f);
-  frag2ply(frag1_dir, "atest1.ply", 0.2f, transform, color_serenity);
-  frag2ply(frag2_dir, "atest2.ply", 0.2f, transform, color_rosequartz);
+  std::vector<float> color_blue;
+  color_blue.push_back(0.0f / 255.0f);
+  color_blue.push_back(0.0f / 255.0f);
+  color_blue.push_back(255.0f / 255.0f);
+  std::vector<float> color_red;
+  color_red.push_back(255.0f / 255.0f);
+  color_red.push_back(0.0f / 255.0f);
+  color_red.push_back(0.0f / 255.0f);
+  frag2ply(frag1_dir, "atest1.ply", 0.2f, transform, color_blue);
+  frag2ply(frag2_dir, "atest2.ply", 0.2f, transform, color_red);
 
   return 0;
 }

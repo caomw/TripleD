@@ -225,10 +225,6 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
   fprintf(fp, "property uchar blue\n");
   fprintf(fp, "end_header\n");
 
-
-  // for (int i = 0; i < 16; i++)
-  //   std::cout << transform[i] << std::endl;
-
   // Load grid to world matrix
   float *grid2cam = new float[16];
   float *cam2world = new float[16];
@@ -236,33 +232,21 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
   load_frag_ext(frag_dir, grid2cam, cam2world);
   multiply_matrix(cam2world, grid2cam, grid2world);
 
-
   // Create point cloud content for ply file
   for (int z = 0; z < tsdf_dim[2]; z++) {
     for (int y = 0; y < tsdf_dim[1]; y++) {
       for (int x = 0; x < tsdf_dim[0]; x++) {
         if (std::abs(tsdf[z * tsdf_dim[1] * tsdf_dim[0] + y * tsdf_dim[0] + x]) < surface_tsdf_threshold) {
 
-          // grid to world coords (7scene)
-          // float sx = ((float)x + 1) * 0.01 - 512 * 0.01 / 2;
-          // float sy = ((float)y + 1) * 0.01 - 512 * 0.01 / 2;
-          // float sz = ((float)z + 1) * 0.01 - 0.5;
-
-          // (synth)
-          // float sx = (float)x * 0.01;
-          // float sy = (float)y * 0.01;
-          // float sz = (float)z * 0.01;
-
-
+          // Convert grid to world coordinates
           float sx = (float)x;
           float sy = (float)y;
           float sz = (float)z;
-
           float tx = grid2world[0] * sx + grid2world[1] * sy + grid2world[2] * sz + grid2world[3];
           float ty = grid2world[4] * sx + grid2world[5] * sy + grid2world[6] * sz + grid2world[7];
           float tz = grid2world[8] * sx + grid2world[9] * sy + grid2world[10] * sz + grid2world[11];
 
-
+          // Apply Rt transform to points
           float fx = transform[0] * tx + transform[1] * ty + transform[2] * tz + transform[3];
           float fy = transform[4] * tx + transform[5] * ty + transform[6] * tz + transform[7];
           float fz = transform[8] * tx + transform[9] * ty + transform[10] * tz + transform[11];
@@ -270,55 +254,13 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
           fwrite(&fy, sizeof(float), 1, fp);
           fwrite(&fz, sizeof(float), 1, fp);
 
-          // if (use_ext) {
-          //   float sx = (float)x;
-          //   float sy = (float)y;
-          //   float sz = (float)z;
-          //   float fx = transform[0] * sx + transform[1] * sy + transform[2] * sz + transform[3];
-          //   float fy = transform[4] * sx + transform[5] * sy + transform[6] * sz + transform[7];
-          //   float fz = transform[8] * sx + transform[9] * sy + transform[10] * sz + transform[11];
-          //   fx = fx + transform[3];
-          //   fy = fy + transform[7];
-          //   fz = fz + transform[11];
-          //   fwrite(&fx, sizeof(float), 1, fp);
-          //   fwrite(&fy, sizeof(float), 1, fp);
-          //   fwrite(&fz, sizeof(float), 1, fp);
-
-          //   uchar r = (uchar) pc_color.x;
-          //   uchar g = (uchar) pc_color.y;
-          //   uchar b = (uchar) pc_color.z;
-          //   fwrite(&r, sizeof(uchar), 1, fp);
-          //   fwrite(&g, sizeof(uchar), 1, fp);
-          //   fwrite(&b, sizeof(uchar), 1, fp);
-          // } else {
-          //   float sx = (float)x;
-          //   float sy = (float)y;
-          //   float sz = (float)z;
-          //   fwrite(&sx, sizeof(float), 1, fp);
-          //   fwrite(&sy, sizeof(float), 1, fp);
-          //   fwrite(&sz, sizeof(float), 1, fp);
-
-          // }
-
-
+          // Give the points color
           unsigned char r = (unsigned char) (color[0]*255.0f);
           unsigned char g = (unsigned char) (color[1]*255.0f);
           unsigned char b = (unsigned char) (color[2]*255.0f);
           fwrite(&r, sizeof(unsigned char), 1, fp);
           fwrite(&g, sizeof(unsigned char), 1, fp);
           fwrite(&b, sizeof(unsigned char), 1, fp);
-
-
-          // transform
-          // float fx = ext_mat[0] * sx + ext_mat[1] * sy + ext_mat[2] * sz;
-          // float fy = ext_mat[4] * sx + ext_mat[5] * sy + ext_mat[6] * sz;
-          // float fz = ext_mat[8] * sx + ext_mat[9] * sy + ext_mat[10] * sz;
-          // fx = fx + ext_mat[3];
-          // fy = fy + ext_mat[7];
-          // fz = fz + ext_mat[11];
-          // fwrite(&fx, sizeof(float), 1, fp);
-          // fwrite(&fy, sizeof(float), 1, fp);
-          // fwrite(&fz, sizeof(float), 1, fp);
         }
       }
     }
