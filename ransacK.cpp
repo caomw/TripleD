@@ -704,6 +704,8 @@ std::vector<int> TestRigidTransformError(const std::vector< std::vector<float> >
       for (int i = 0; i < 12; i++) {
         rigidtransform[i] = h_RT[i];
       }
+      if (is_verbose)
+        printf("RANSAC iteration: %d/%d, inliers: %d\n", iter, numLoops, maxCount);
 
       // Update estimate of N, the number of trials to ensure we pick,
       // with probability p, a data set with no outliers.
@@ -715,9 +717,7 @@ std::vector<int> TestRigidTransformError(const std::vector< std::vector<float> >
       // conv_num_loops = (int) std::floor(std::log(1 - p) / std::log(pNoOutliers));
       // conv_num_loops = comp_min(conv_num_loops, 100000); // at least try 10,000 times
     }
-      if (is_verbose)
-        printf("RANSAC iteration: %d/%d, inliers: %d\n", iter, numLoops, maxCount);
-
+      
     // if (iter > conv_num_loops)
     //   break;
 
@@ -740,11 +740,12 @@ std::vector<int> TestRigidTransformError(const std::vector< std::vector<float> >
   }
   if (is_verbose) {
     printf("========================================================================================================================\n");
+    
     printf("Total # of inliers: %d \n", maxCount);
   }
 
   estimateRigidTransform(refCoord_inlier, movCoord_inlier, maxCount, rigidtransform);
-  std::vector<int> finalinlier = TestRigidTransformError(refCoord, movCoord, RankInd, h_RT, thresh2, topK, &h_count);
+  std::vector<int> finalinlier = TestRigidTransformError(refCoord, movCoord, RankInd, rigidtransform, thresh2, topK, &h_count);
   std::vector<std::vector<float>> alllinlierPts;
 
   for (int i = 0; i < finalinlier.size()/2; ++i) {
