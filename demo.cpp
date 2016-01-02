@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
   //------------------ Demo for loading old formatted TSDFs ------------------//
 
-  // // Convert TSDF from old format to new format
+  // Convert TSDF from old format to new format
   // std::string old_fragment_name = "/data/andyz/kinfu/sun3d/mit_76_studyroom/76-1studyroom2/scene50_99";
   // std::string new_fragment_name = "/data/andyz/fragments/sun3d/mit_176_studyroom2_50_99";
   // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   // float ransac_thresh = 0.04f;
 
   // // Use RANSAC to compute rigid transform
-  // float* Rt = new float[16]; 
+  // float* Rt = new float[16];
   // Rt[12] = 0; Rt[13] = 0; Rt[14] = 0; Rt[15] = 1;
   // std::vector<std::vector<float>> inlier_pairs;
   // ddd_align_feature_cloud(world_keypoints1, keypoint_features1, score_matrix1,
@@ -86,6 +86,19 @@ int main(int argc, char **argv) {
   // for (int i = 0; i < inlier_pairs.size(); i++) {
   //   std::cout << inlier_pairs[i][0] << " " << inlier_pairs[i][1] << " " << inlier_pairs[i][2] << " " << inlier_pairs[i][3] << " " << inlier_pairs[i][4] << " " << inlier_pairs[i][5] << std::endl;
   // }
+
+  float* transform = new float[16];
+  load_identity_matrix(transform);
+  std::vector<float> color_serenity;
+  color_serenity.push_back(145.0f / 255.0f);
+  color_serenity.push_back(168.0f / 255.0f);
+  color_serenity.push_back(209.0f / 255.0f);
+  std::vector<float> color_rosequartz;
+  color_rosequartz.push_back(247.0f / 255.0f);
+  color_rosequartz.push_back(202.0f / 255.0f);
+  color_rosequartz.push_back(201.0f / 255.0f);
+  frag2ply(frag1_dir, "atest1.ply", 0.2f, transform, color_serenity);
+  frag2ply(frag2_dir, "atest2.ply", 0.2f, transform, color_rosequartz);
 
   return 0;
 }

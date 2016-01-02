@@ -87,7 +87,12 @@ bool file_exists(const std::string &filename) {
 
 
 
-
+void load_identity_matrix(float mOut[16]) {
+  mOut[0] = 1.0f;  mOut[1] = 0.0f;  mOut[2] = 0.0f;  mOut[3] = 0.0f;
+  mOut[4] = 0.0f;  mOut[5] = 1.0f;  mOut[6] = 0.0f;  mOut[7] = 0.0f;
+  mOut[8] = 0.0f;  mOut[9] = 0.0f;  mOut[10] = 1.0f; mOut[11] = 0.0f;
+  mOut[12] = 0.0f; mOut[13] = 0.0f; mOut[14] = 0.0f; mOut[15] = 1.0f;
+}
 
 void multiply_matrix(const float m1[16], const float m2[16], float mOut[16]) {
   mOut[0]  = m1[0] * m2[0]  + m1[1] * m2[4]  + m1[2] * m2[8]   + m1[3] * m2[12];
