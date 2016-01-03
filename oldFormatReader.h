@@ -98,6 +98,11 @@ void checkout_keypts(const std::string &scene_name, std::vector<std::vector<floa
 
 void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
 
+  std::vector<std::vector<float>> grid_keypoints;
+  checkout_keypts(src, grid_keypoints);
+  if (grid_keypoints.size() == 0)
+    return;
+
   // Read TSDF from old format
   float *tsdf = new float[512 * 512 * 1024];
   checkout_tsdf(src, tsdf, 0, 512 - 1, 0, 512 - 1, 0, 1024 - 1);

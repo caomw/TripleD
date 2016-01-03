@@ -198,7 +198,7 @@ void tsdf2ply(const std::string &filename, float* tsdf, float threshold, int x_d
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Load frag (in world coordinates), apply transform, and save to point cloud
+// Load frag (in camera coordinates), apply transform, and save to point cloud
 void frag2ply(const std::string &frag_dir, const std::string &filename, float surface_tsdf_threshold, float* transform, std::vector<float> &color) {
 
   // Load TSDF volume
@@ -225,7 +225,7 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
   fprintf(fp, "property uchar blue\n");
   fprintf(fp, "end_header\n");
 
-  // Load grid to world matrix
+  // Load grid to camera matrix
   float *grid2cam = new float[16];
   load_frag_ext(frag_dir, grid2cam);
 
@@ -235,7 +235,7 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
       for (int x = 0; x < tsdf_dim[0]; x++) {
         if (std::abs(tsdf[z * tsdf_dim[1] * tsdf_dim[0] + y * tsdf_dim[0] + x]) < surface_tsdf_threshold) {
 
-          // Convert grid to world coordinates
+          // Convert grid to camera coordinates
           float sx = (float)x;
           float sy = (float)y;
           float sz = (float)z;
@@ -343,12 +343,12 @@ void keypoints2ply(std::vector<std::vector<float>> &keypoints, const std::string
   fclose(fp);
 }
 
-void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int>> &grid_keypoints,   std::vector<std::vector<float>> &world_keypoints) {
+void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int>> &grid_keypoints,   std::vector<std::vector<float>> &cam_keypoints) {
 
   // If has keypoint file, load it. If not, detect keypoints.
-  std::string grid_keypoints_filename = frag_dir + "/keypoints/grid_keypoints.txt";
-  std::string world_keypoints_filename = frag_dir + "/keypoints/world_keypoints.txt";
-  if (file_exists(grid_keypoints_filename) && file_exists(world_keypoints_filename)) {
+  std::string grid_keypoints_filename = frag_dir + "/keypoints/keypoints_grid.txt";
+  std::string cam_keypoints_filename = frag_dir + "/keypoints/keypoints_cam.txt";
+  if (file_exists(grid_keypoints_filename) && file_exists(cam_keypoints_filename)) {
     std::cerr << "Loading pre-computed keypoints..." << std::endl;
 
     // Load keypoints in grid coordinates
@@ -367,17 +367,17 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
     fclose(fp);
 
     // Load keypoints in world coordinates
-    fp = fopen(world_keypoints_filename.c_str(), "r");
+    fp = fopen(cam_keypoints_filename.c_str(), "r");
     num_keypoints = 0;
     iret = fscanf(fp, "# number of keypoints: %d", &num_keypoints);
     for (int i = 0; i < num_keypoints; i++) {
-      std::vector<float> tmp_world_keypoint;
+      std::vector<float> tmp_cam_keypoint;
       for (int j = 0; j < 3; j++) {
         float tmp_coord;
         iret = fscanf(fp, "%f", &tmp_coord);
-        tmp_world_keypoint.push_back(tmp_coord);
+        tmp_cam_keypoint.push_back(tmp_coord);
       }
-      world_keypoints.push_back(tmp_world_keypoint);
+      cam_keypoints.push_back(tmp_cam_keypoint);
     }
     fclose(fp);
 
@@ -409,24 +409,24 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
 
     // Convert keypoints to world coordinates
     for (int i = 0; i < grid_keypoints.size(); i++) {
-      std::vector<float> tmp_world_keypoint;
+      std::vector<float> tmp_cam_keypoint;
       float sx = (float) grid_keypoints[i][0];
       float sy = (float) grid_keypoints[i][1];
       float sz = (float) grid_keypoints[i][2];
       float fx = grid2cam[0] * sx + grid2cam[1] * sy + grid2cam[2] * sz + grid2cam[3];
       float fy = grid2cam[4] * sx + grid2cam[5] * sy + grid2cam[6] * sz + grid2cam[7];
       float fz = grid2cam[8] * sx + grid2cam[9] * sy + grid2cam[10] * sz + grid2cam[11];
-      tmp_world_keypoint.push_back(fx);
-      tmp_world_keypoint.push_back(fy);
-      tmp_world_keypoint.push_back(fz);
-      world_keypoints.push_back(tmp_world_keypoint);
+      tmp_cam_keypoint.push_back(fx);
+      tmp_cam_keypoint.push_back(fy);
+      tmp_cam_keypoint.push_back(fz);
+      cam_keypoints.push_back(tmp_cam_keypoint);
     }
 
     // Save keypoints in world coordinates
-    fp = fopen(world_keypoints_filename.c_str(), "w");
-    fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints.size());
-    for (int i = 0; i < world_keypoints.size(); i++) {
-      fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints[i][0], world_keypoints[i][1], world_keypoints[i][2]);
+    fp = fopen(cam_keypoints_filename.c_str(), "w");
+    fprintf(fp, "# number of keypoints: %d\n", (int) cam_keypoints.size());
+    for (int i = 0; i < cam_keypoints.size(); i++) {
+      fprintf(fp, "%.17g %.17g %.17g\n", cam_keypoints[i][0], cam_keypoints[i][1], cam_keypoints[i][2]);
     }
     fclose(fp);
 
@@ -558,26 +558,26 @@ void compare_frag_features(std::vector<std::vector<float>> &keypoint_features1, 
   }
 }
 
-void save_frag_world_keypoints_cache(std::vector<std::vector<float>> &world_keypoints1, std::vector<std::vector<float>> &world_keypoints2, const std::string &frag_cache_dir, const std::string &frag_pair_name) {
+void save_frag_cam_keypoints_cache(std::vector<std::vector<float>> &cam_keypoints1, std::vector<std::vector<float>> &cam_keypoints2, const std::string &frag_cache_dir, const std::string &frag_pair_name) {
 
-  std::string cache_world_keypoints_filename_1 = frag_cache_dir + "/" + frag_pair_name + "_keypoints1.txt";
-  std::string cache_world_keypoints_filename_2 = frag_cache_dir + "/" + frag_pair_name + "_keypoints2.txt";
+  std::string cache_cam_keypoints_filename_1 = frag_cache_dir + "/" + frag_pair_name + "_keypoints1.txt";
+  std::string cache_cam_keypoints_filename_2 = frag_cache_dir + "/" + frag_pair_name + "_keypoints2.txt";
 
-  if (!file_exists(cache_world_keypoints_filename_1) || !file_exists(cache_world_keypoints_filename_2)) {
+  if (!file_exists(cache_cam_keypoints_filename_1) || !file_exists(cache_cam_keypoints_filename_2)) {
 
     // Save keypoints from first fragment to cache
-    FILE *fp = fopen(cache_world_keypoints_filename_1.c_str(), "w");
-    fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints1.size());
-    for (int i = 0; i < world_keypoints1.size(); i++) {
-      fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints1[i][0], world_keypoints1[i][1], world_keypoints1[i][2]);
+    FILE *fp = fopen(cache_cam_keypoints_filename_1.c_str(), "w");
+    fprintf(fp, "# number of keypoints: %d\n", (int) cam_keypoints1.size());
+    for (int i = 0; i < cam_keypoints1.size(); i++) {
+      fprintf(fp, "%.17g %.17g %.17g\n", cam_keypoints1[i][0], cam_keypoints1[i][1], cam_keypoints1[i][2]);
     }
     fclose(fp);
 
     // Save keypoints from second fragment to cache
-    fp = fopen(cache_world_keypoints_filename_2.c_str(), "w");
-    fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints2.size());
-    for (int i = 0; i < world_keypoints2.size(); i++) {
-      fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints2[i][0], world_keypoints2[i][1], world_keypoints2[i][2]);
+    fp = fopen(cache_cam_keypoints_filename_2.c_str(), "w");
+    fprintf(fp, "# number of keypoints: %d\n", (int) cam_keypoints2.size());
+    for (int i = 0; i < cam_keypoints2.size(); i++) {
+      fprintf(fp, "%.17g %.17g %.17g\n", cam_keypoints2[i][0], cam_keypoints2[i][1], cam_keypoints2[i][2]);
     }
     fclose(fp);
 
