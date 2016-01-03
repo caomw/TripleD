@@ -67,7 +67,7 @@ void save_frag_tsdf(const std::string &frag_dir, float* tsdf, int x_dim, int y_d
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void load_frag_ext(const std::string &frag_dir, float* grid2cam, float* cam2world) {
+void load_frag_ext(const std::string &frag_dir, float* grid2cam) {
 
   // Read matrix for converting voxel grid coordinates to camera coordinates
   std::string filename = frag_dir + "/grid2cam.txt";
@@ -76,12 +76,12 @@ void load_frag_ext(const std::string &frag_dir, float* grid2cam, float* cam2worl
     int iret = fscanf(fp, "%f", &grid2cam[i]);
   fclose(fp);
 
-  // Read matrix for converting camera coordinates to world coordinates
-  filename = frag_dir + "/cam2world.txt";
-  fp = fopen(filename.c_str(), "r");
-  for (int i = 0; i < 16; i++)
-    int iret = fscanf(fp, "%f", &cam2world[i]);
-  fclose(fp);
+  // // Read matrix for converting camera coordinates to world coordinates
+  // filename = frag_dir + "/cam2world.txt";
+  // fp = fopen(filename.c_str(), "r");
+  // for (int i = 0; i < 16; i++)
+  //   int iret = fscanf(fp, "%f", &cam2world[i]);
+  // fclose(fp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,10 +227,7 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
 
   // Load grid to world matrix
   float *grid2cam = new float[16];
-  float *cam2world = new float[16];
-  float *grid2world = new float[16];
-  load_frag_ext(frag_dir, grid2cam, cam2world);
-  multiply_matrix(cam2world, grid2cam, grid2world);
+  load_frag_ext(frag_dir, grid2cam);
 
   // Create point cloud content for ply file
   for (int z = 0; z < tsdf_dim[2]; z++) {
@@ -242,9 +239,9 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
           float sx = (float)x;
           float sy = (float)y;
           float sz = (float)z;
-          float tx = grid2world[0] * sx + grid2world[1] * sy + grid2world[2] * sz + grid2world[3];
-          float ty = grid2world[4] * sx + grid2world[5] * sy + grid2world[6] * sz + grid2world[7];
-          float tz = grid2world[8] * sx + grid2world[9] * sy + grid2world[10] * sz + grid2world[11];
+          float tx = grid2cam[0] * sx + grid2cam[1] * sy + grid2cam[2] * sz + grid2cam[3];
+          float ty = grid2cam[4] * sx + grid2cam[5] * sy + grid2cam[6] * sz + grid2cam[7];
+          float tz = grid2cam[8] * sx + grid2cam[9] * sy + grid2cam[10] * sz + grid2cam[11];
 
           // Apply Rt transform to points
           float fx = transform[0] * tx + transform[1] * ty + transform[2] * tz + transform[3];
@@ -266,6 +263,9 @@ void frag2ply(const std::string &frag_dir, const std::string &filename, float su
     }
   }
   fclose(fp);
+
+  delete [] tsdf;
+  delete [] grid2cam;
 }
 
 // Load keypoints, apply transform, and save to point cloud
@@ -405,10 +405,7 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
 
     // Load grid to world matrix
     float *grid2cam = new float[16];
-    float *cam2world = new float[16];
-    float *grid2world = new float[16];
-    load_frag_ext(frag_dir, grid2cam, cam2world);
-    multiply_matrix(cam2world, grid2cam, grid2world);
+    load_frag_ext(frag_dir, grid2cam);
 
     // Convert keypoints to world coordinates
     for (int i = 0; i < grid_keypoints.size(); i++) {
@@ -416,9 +413,9 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
       float sx = (float) grid_keypoints[i][0];
       float sy = (float) grid_keypoints[i][1];
       float sz = (float) grid_keypoints[i][2];
-      float fx = grid2world[0] * sx + grid2world[1] * sy + grid2world[2] * sz + grid2world[3];
-      float fy = grid2world[4] * sx + grid2world[5] * sy + grid2world[6] * sz + grid2world[7];
-      float fz = grid2world[8] * sx + grid2world[9] * sy + grid2world[10] * sz + grid2world[11];
+      float fx = grid2cam[0] * sx + grid2cam[1] * sy + grid2cam[2] * sz + grid2cam[3];
+      float fy = grid2cam[4] * sx + grid2cam[5] * sy + grid2cam[6] * sz + grid2cam[7];
+      float fz = grid2cam[8] * sx + grid2cam[9] * sy + grid2cam[10] * sz + grid2cam[11];
       tmp_world_keypoint.push_back(fx);
       tmp_world_keypoint.push_back(fy);
       tmp_world_keypoint.push_back(fz);
@@ -435,8 +432,6 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
 
     delete [] tsdf;
     delete [] grid2cam;
-    delete [] cam2world;
-    delete [] grid2world;
 
   }
 }
