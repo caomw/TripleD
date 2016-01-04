@@ -152,8 +152,8 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
 
   save_frag_tsdf(dst, new_tsdf, x_dim, y_dim, z_dim); // function found in fragments/io.h
 
-  float *cam2world = new float[16];
-  checkout_ext(src, cam2world);
+  // float *cam2world = new float[16];
+  // checkout_ext(src, cam2world);
 
   float *grid2cam = new float[16];
   grid2cam[0] = 0.01f;  grid2cam[1] = 0.0f;   grid2cam[2] = 0.0f;    grid2cam[3] = -2.55f + ((float)x_min)*0.01f; 
@@ -161,8 +161,8 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   grid2cam[8] = 0.0f;   grid2cam[9] = 0.0f;   grid2cam[10] = 0.01f;  grid2cam[11] = -0.49f + ((float)z_min)*0.01f; 
   grid2cam[12] = 0.0f;  grid2cam[13] = 0.0f;  grid2cam[14] = 0.0f;   grid2cam[15] = 1.0f; 
 
-  float *grid2firstcam = new float[16];
-  multiply_matrix(cam2world, grid2cam, grid2firstcam);
+  // float *grid2firstcam = new float[16];
+  // multiply_matrix(cam2world, grid2cam, grid2firstcam);
 
   // grid2world[0] = 1.0f;
   // grid2world[1] = 0.0f;
@@ -197,19 +197,19 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   // fprintf(fp, "%.17g %.17g %.17g %.17g\n", cam2world[12], cam2world[13], cam2world[14], cam2world[15]);
   // fclose(fp);
 
-  std::string grid2firstcam_filename = dst + "/grid2cam.txt";
-  FILE *fp = fopen(grid2firstcam_filename.c_str(), "w");
-  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2firstcam[0], grid2firstcam[1], grid2firstcam[2], grid2firstcam[3]);
-  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2firstcam[4], grid2firstcam[5], grid2firstcam[6], grid2firstcam[7]);
-  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2firstcam[8], grid2firstcam[9], grid2firstcam[10], grid2firstcam[11]);
-  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2firstcam[12], grid2firstcam[13], grid2firstcam[14], grid2firstcam[15]);
+  std::string grid2cam_filename = dst + "/grid2cam.txt";
+  FILE *fp = fopen(grid2cam_filename.c_str(), "w");
+  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2cam[0], grid2cam[1], grid2cam[2], grid2cam[3]);
+  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2cam[4], grid2cam[5], grid2cam[6], grid2cam[7]);
+  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2cam[8], grid2cam[9], grid2cam[10], grid2cam[11]);
+  fprintf(fp, "%.17g %.17g %.17g %.17g\n", grid2cam[12], grid2cam[13], grid2cam[14], grid2cam[15]);
   fclose(fp);
 
-  tsdf2ply(dst + "/pointcloud.ply", new_tsdf, 0.2, x_dim, y_dim, z_dim, grid2firstcam);
+  tsdf2ply(dst + "/pointcloud.ply", new_tsdf, 0.2, x_dim, y_dim, z_dim, grid2cam);
 
   std::vector<std::vector<int>> grid_keypoints1;
-  std::vector<std::vector<float>> world_keypoints1;
-  get_frag_keypoints(dst, grid_keypoints1, world_keypoints1);
+  std::vector<std::vector<float>> cam_keypoints1;
+  get_frag_keypoints(dst, grid_keypoints1, cam_keypoints1);
 
   float* transform = new float[16];
   load_identity_matrix(transform);
@@ -217,7 +217,7 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   color_red.push_back(255.0f / 255.0f);
   color_red.push_back(0.0f / 255.0f);
   color_red.push_back(0.0f / 255.0f);
-  keypoints2ply(world_keypoints1, dst + "/keypoints/keypoints.ply", transform, color_red);
+  keypoints2ply(cam_keypoints1, dst + "/keypoints/harris/keypoints.ply", transform, color_red);
   
   std::vector<std::vector<float>> keypoint_features1;
   get_frag_features(dst, grid_keypoints1, 2048, keypoint_features1);
@@ -232,14 +232,14 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
   // }
 
 
-  // std::vector<std::vector<float>> world_keypoints;
+  // std::vector<std::vector<float>> cam_keypoints;
 
 
   // if (!file_exists(dst + "/keypoints"))
   //     sys_command("mkdir " + dst + "/keypoints");
 
   // std::string grid_keypoints_filename = dst + "/keypoints/grid_keypoints.txt";
-  // std::string world_keypoints_filename = dst + "/keypoints/world_keypoints.txt";
+  // std::string cam_keypoints_filename = dst + "/keypoints/cam_keypoints.txt";
 
   // // Save keypoints in grid coordinates
   // fp = fopen(grid_keypoints_filename.c_str(), "w");
@@ -250,24 +250,24 @@ void convert_tsdf_old_to_new(const std::string &src, const std::string &dst) {
 
   // // Convert keypoints to world coordinates
   // for (int i = 0; i < grid_keypoints.size(); i++) {
-  //   std::vector<float> tmp_world_keypoint;
+  //   std::vector<float> tmp_cam_keypoint;
   //   float sx = (float) grid_keypoints[i][0];
   //   float sy = (float) grid_keypoints[i][1];
   //   float sz = (float) grid_keypoints[i][2];
   //   float fx = grid2world[0] * sx + grid2world[1] * sy + grid2world[2] * sz + grid2world[3];
   //   float fy = grid2world[4] * sx + grid2world[5] * sy + grid2world[6] * sz + grid2world[7];
   //   float fz = grid2world[8] * sx + grid2world[9] * sy + grid2world[10] * sz + grid2world[11];
-  //   tmp_world_keypoint.push_back(fx);
-  //   tmp_world_keypoint.push_back(fy);
-  //   tmp_world_keypoint.push_back(fz);
-  //   world_keypoints.push_back(tmp_world_keypoint);
+  //   tmp_cam_keypoint.push_back(fx);
+  //   tmp_cam_keypoint.push_back(fy);
+  //   tmp_cam_keypoint.push_back(fz);
+  //   cam_keypoints.push_back(tmp_cam_keypoint);
   // }
 
   // // Save keypoints in world coordinates
-  // fp = fopen(world_keypoints_filename.c_str(), "w");
-  // fprintf(fp, "# number of keypoints: %d\n", (int) world_keypoints.size());
-  // for (int i = 0; i < world_keypoints.size(); i++) {
-  //   fprintf(fp, "%.17g %.17g %.17g\n", world_keypoints[i][0], world_keypoints[i][1], world_keypoints[i][2]);
+  // fp = fopen(cam_keypoints_filename.c_str(), "w");
+  // fprintf(fp, "# number of keypoints: %d\n", (int) cam_keypoints.size());
+  // for (int i = 0; i < cam_keypoints.size(); i++) {
+  //   fprintf(fp, "%.17g %.17g %.17g\n", cam_keypoints[i][0], cam_keypoints[i][1], cam_keypoints[i][2]);
   // }
   // fclose(fp);
 

@@ -346,8 +346,8 @@ void keypoints2ply(std::vector<std::vector<float>> &keypoints, const std::string
 void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int>> &grid_keypoints,   std::vector<std::vector<float>> &cam_keypoints) {
 
   // If has keypoint file, load it. If not, detect keypoints.
-  std::string grid_keypoints_filename = frag_dir + "/keypoints/keypoints_grid.txt";
-  std::string cam_keypoints_filename = frag_dir + "/keypoints/keypoints_cam.txt";
+  std::string grid_keypoints_filename = frag_dir + "/keypoints/harris/keypoints_grid.txt";
+  std::string cam_keypoints_filename = frag_dir + "/keypoints/harris/keypoints_cam.txt";
   if (file_exists(grid_keypoints_filename) && file_exists(cam_keypoints_filename)) {
     std::cerr << "Loading pre-computed keypoints..." << std::endl;
 
@@ -383,8 +383,8 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
 
   } else {
     std::cerr << "Keypoints not pre-computed. Detecting keypoints..." << std::endl;
-    if (!file_exists(frag_dir + "/keypoints"))
-      sys_command("mkdir " + frag_dir + "/keypoints");
+    if (!file_exists(frag_dir + "/keypoints/harris"))
+      sys_command("mkdir -p " + frag_dir + "/keypoints/harris");
 
     // Load TSDF volume
     std::vector<int> tsdf_dim = load_frag_dim(frag_dir);
@@ -422,7 +422,7 @@ void get_frag_keypoints(const std::string &frag_dir, std::vector<std::vector<int
       cam_keypoints.push_back(tmp_cam_keypoint);
     }
 
-    // Save keypoints in world coordinates
+    // Save keypoints in camera coordinates
     fp = fopen(cam_keypoints_filename.c_str(), "w");
     fprintf(fp, "# number of keypoints: %d\n", (int) cam_keypoints.size());
     for (int i = 0; i < cam_keypoints.size(); i++) {
@@ -440,7 +440,7 @@ void get_frag_features(const std::string &frag_dir, std::vector<std::vector<int>
 
 
   // If has keypoint features file, load it. If not, find features.
-  std::string keypoint_features_filename = frag_dir + "/keypoints/keypoint_features.txt";
+  std::string keypoint_features_filename = frag_dir + "/keypoints/harris/keypoint_ddd_features.txt";
   if (file_exists(keypoint_features_filename)) {
     std::cerr << "Loading pre-computed keypoint features..." << std::endl;
 
@@ -461,8 +461,8 @@ void get_frag_features(const std::string &frag_dir, std::vector<std::vector<int>
 
   } else {
     std::cerr << "Keypoint features not pre-computed. Computing features..." << std::endl;
-    if (!file_exists(frag_dir + "/keypoints"))
-      sys_command("mkdir " + frag_dir + "/keypoints");
+    if (!file_exists(frag_dir + "/keypoints/harris"))
+      sys_command("mkdir -p " + frag_dir + "/keypoints/harris");
 
     // Load TSDF volume
     std::vector<int> tsdf_dim = load_frag_dim(frag_dir);
@@ -491,7 +491,7 @@ void compare_frag_features(std::vector<std::vector<float>> &keypoint_features1, 
 
   // If cache directory doesn't exist, create it
   if (!file_exists(frag_cache_dir))
-    sys_command("mkdir " + frag_cache_dir);
+    sys_command("mkdir -p " + frag_cache_dir);
 
   std::string score_matrix1_filename = frag_cache_dir + "/" + frag_pair_name + "_scores1.txt";
   std::string score_matrix2_filename = frag_cache_dir + "/" + frag_pair_name + "_scores2.txt";

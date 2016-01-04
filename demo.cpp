@@ -6,7 +6,7 @@
 
 
 void test(const std::string &old_sequence_name, const std::string &new_sequence_name) {
-  sys_command("mkdir " + new_sequence_name);
+  sys_command("mkdir -p " + new_sequence_name);
   std::vector<std::string> scene_names;
   std::string search_string = ".tsdf";
   get_files_in_directory(old_sequence_name, scene_names, search_string);
@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
   //------------------ Demo for loading old formatted TSDFs ------------------//
 
   // Convert TSDF from old format to new format
-  // std::string old_sequence_name;
-  // std::string new_sequence_name;
+  std::string old_sequence_name;
+  std::string new_sequence_name;
 
   // old_sequence_name = "/data/andyz/kinfu/test/sequences/redkitchen_seq03";
   // new_sequence_name = "/data/andyz/fragments/sevenscenes/redkitchen/seq-03";
@@ -89,6 +89,47 @@ int main(int argc, char **argv) {
 
 
 
+
+
+  // std::string old_fragment_name = "/data/andyz/kinfu/test/sequences/redkitchen_seq03/scene0_30";
+  // std::string new_fragment_name = "/data/andyz/fragments/sevenscenes/redkitchen/seq-03/scene0_30";
+  // sys_command("mkdir -p " + new_fragment_name);
+  // convert_tsdf_old_to_new(old_fragment_name, new_fragment_name);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // old_sequence_name = "/data/andyz/kinfu/sun3d/harvard_c6/hv_c6_1";
+  // new_sequence_name = "/data/andyz/fragments/sun3d/harvard_c6/hv_c6_1";
+  // test(old_sequence_name, new_sequence_name);
+
+  // old_sequence_name = "/data/andyz/kinfu/sun3d/hotel_umd/maryland_hotel3";
+  // new_sequence_name = "/data/andyz/fragments/sun3d/hotel_umd/maryland_hotel3";
+  // test(old_sequence_name, new_sequence_name);
+
+  // old_sequence_name = "/data/andyz/kinfu/sun3d/mit_32_d507/d507_2";
+  // new_sequence_name = "/data/andyz/fragments/sun3d/mit_32_d507/d507_2";
+  // test(old_sequence_name, new_sequence_name);
+
+  // old_sequence_name = "/data/andyz/kinfu/sun3d/mit_76_studyroom/76-1studyroom2";
+  // new_sequence_name = "/data/andyz/fragments/sun3d/mit_76_studyroom/76-1studyroom2";
+  // test(old_sequence_name, new_sequence_name);
+  
+  // old_sequence_name = "/data/andyz/kinfu/sun3d/mit_lab_hj/lab_hj_tea_nov_2_2012_scan1_erika";
+  // new_sequence_name = "/data/andyz/fragments/sun3d/mit_lab_hj/lab_hj_tea_nov_2_2012_scan1_erika";
+  // test(old_sequence_name, new_sequence_name);
 
 
 
