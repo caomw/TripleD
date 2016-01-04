@@ -23,7 +23,7 @@ bool sort_arr_desc_compare(int a, int b, float* data) {
   return data[a] > data[b];
 }
 
-std::vector<std::vector<float>> ddd_align_feature_cloud(const std::vector<std::vector<float>> &world_keypoints1, const std::vector<std::vector<float>> &score_matrix1,
+std::vector<std::vector<int>> ddd_align_feature_cloud(const std::vector<std::vector<float>> &world_keypoints1, const std::vector<std::vector<float>> &score_matrix1,
                              const std::vector<std::vector<float>> &world_keypoints2, const std::vector<std::vector<float>> &score_matrix2,
                              float voxelSize, float k_match_score_thresh, float ransac_k, float max_ransac_iter, float ransac_thresh, float* Rt) {
 
@@ -86,7 +86,7 @@ std::vector<std::vector<float>> ddd_align_feature_cloud(const std::vector<std::v
   }
 
   // Compute Rt transform from second to first point cloud (k-ransac)
-  std::vector<std::vector<float>> inliers = ransacfitRt(world_keypoints1, world_keypoints2, match_idx, ransac_k, max_ransac_iter, ransac_thresh, Rt, true);
+  std::vector<std::vector<int>> inliers = ransacfitRt(world_keypoints1, world_keypoints2, match_idx, ransac_k, max_ransac_iter, ransac_thresh, Rt, true);
   return inliers;
 }
 
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
   const float ransac_inlier_thresh = 0.04f;
   const float voxelSize = 0.01f;
 
-  std::vector<std::vector<float>> inliers = ddd_align_feature_cloud(keypoints1, score_matrix1, keypoints2, score_matrix2, voxelSize, k_match_score_thresh, ransac_k, max_ransac_iter, ransac_inlier_thresh, Rt);
+  std::vector<std::vector<int>> inliers = ddd_align_feature_cloud(keypoints1, score_matrix1, keypoints2, score_matrix2, voxelSize, k_match_score_thresh, ransac_k, max_ransac_iter, ransac_inlier_thresh, Rt);
 
   // Save to file in results
   std::string rt_filename = frag_cache_dir + "/" + frag_pair_name + "_rt.txt";
@@ -183,6 +183,8 @@ int main(int argc, char **argv) {
     fprintf(file, "%.17g %.17g %.17g %.17g\n", Rt[4 * i + 0], Rt[4 * i + 1], Rt[4 * i + 2], Rt[4 * i + 3]);
 
   fprintf(file, "num_inliers: %d\n",inliers.size());
+  for (int i = 0; i < inliers.size(); i++)
+    fprintf(file, "%d %d\n", inliers[i][0], inliers[i][1]);
   fclose(file);
 
 

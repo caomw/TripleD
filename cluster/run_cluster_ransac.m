@@ -1,6 +1,6 @@
 function run_cluster_ransac(id_start)
-    % /n/fs/sun3d/DDD/TripleD/cluster
-    % /n/fs/vision/ionicNew/starter.sh cluster 1000mb 1:00:00 1 100 1
+    % cd /n/fs/sun3d/DDD/TripleD/cluster
+    % /n/fs/vision/ionicNew/starter.sh run_cluster_ransac 1000mb 1:00:00 1 100 1
     sequenceName = 'hotel_umd/maryland_hotel3/';
     write2path = fullfile('/n/fs/sun3d/DDD/matchdata/',sequenceName);
      

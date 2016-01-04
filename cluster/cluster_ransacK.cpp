@@ -646,7 +646,7 @@ std::vector<int> TestRigidTransformError(const std::vector< std::vector<float> >
 
 }
 
-std::vector<std::vector<float>>  ransacfitRt(const std::vector< std::vector<float> > refCoord, const std::vector< std::vector<float> > movCoord,
+std::vector<std::vector<int>>  ransacfitRt(const std::vector< std::vector<float> > refCoord, const std::vector< std::vector<float> > movCoord,
                 const std::vector< std::vector<int> > RankInd, const int topK,
                 const int numLoops, const float thresh, float* rigidtransform, bool is_verbose)
 {
@@ -756,21 +756,19 @@ std::vector<std::vector<float>>  ransacfitRt(const std::vector< std::vector<floa
   delete[] movCoord_inlier;
 
   std::vector<int> finalinlier = TestRigidTransformError(refCoord, movCoord, RankInd, rigidtransform, thresh2, topK, &h_count);
-  std::vector<std::vector<float>> alllinlierPts;
+  std::vector<std::vector<int>> alllinlierIdx;
 
   for (int i = 0; i < finalinlier.size()/2; ++i) {
-    std::vector<float> tmp_keypoint(6,0);
-    for (int j = 0; j < 3; j++) {
-      tmp_keypoint[j] = refCoord[finalinlier[2 * i]][j];
-      int tmp_idx = RankInd[finalinlier[2 * i]][finalinlier[2 * i + 1]];
-      tmp_keypoint[3 + j] = movCoord[tmp_idx][j];
-    }
-    alllinlierPts.push_back(tmp_keypoint);
+    std::vector<int> tmp_keypoint_idx(2,0);
+    tmp_keypoint_idx[0] = finalinlier[2 * i];
+    int tmp_idx = RankInd[finalinlier[2 * i]][finalinlier[2 * i + 1]];
+    tmp_keypoint_idx[1] = tmp_idx;
+    alllinlierIdx.push_back(tmp_keypoint_idx);
   }
 
   if (is_verbose) {
     printf("========================================================================================================================\n");
-    printf("re-EstimateRigidTransform # of inliers: %d \n", (int) alllinlierPts.size());
+    printf("re-EstimateRigidTransform # of inliers: %d \n", (int) alllinlierIdx.size());
   }
 
 
@@ -781,7 +779,7 @@ std::vector<std::vector<float>>  ransacfitRt(const std::vector< std::vector<floa
       printf("%f,%f,%f,%f\n", rigidtransform[0 + jj * 4], rigidtransform[1 + 4 * jj], rigidtransform[2 + 4 * jj], rigidtransform[3 + 4 * jj]);
     }
   }
-  return alllinlierPts;
+  return alllinlierIdx;
 }
 
 // int main(){
